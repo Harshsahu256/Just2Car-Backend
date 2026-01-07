@@ -3,6 +3,7 @@ import Car from "../Models/car.model.js";
 import { ApiError } from "../Utils/apiError.js";
  import Franchise from "../Models/franchise.model.js";
 import User from "../Models/user.model.js";
+import mongoose from "mongoose";
 
 export const sendInquiry = async (req, res, next) => {
   try {
@@ -135,5 +136,97 @@ export const deleteFranchiseInquiry = async (req, res, next) => {
 
   } catch (error) {
     next(error);
+  }
+};
+
+//======================Updated stutes inqury================//
+
+export const updateInquiryStatus = async (req, res, next) => {
+  try {
+    const { inquiryId } = req.params;
+    const { status } = req.body;
+
+    // ✅ Allowed status check
+    const allowedStatus = ["pending", "contacted", "closed", "converted"];
+
+    if (!allowedStatus.includes(status)) {
+      return next(new ApiError(400, "Invalid status value"));
+    }
+
+    // ✅ Inquiry find
+    const inquiry = await Inquiry.findById(inquiryId);
+
+    if (!inquiry) {
+      return next(new ApiError(404, "Inquiry not found"));
+    }
+
+    // ✅ Security: sirf assigned franchise hi update kar sakta hai
+    if (inquiry.assignedFranchise.toString() !== req.user.franchiseId.toString()) {
+      return next(new ApiError(403, "You are not allowed to update this inquiry"));
+    }
+
+    // ✅ Update status
+    inquiry.status = status;
+    await inquiry.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Inquiry status updated successfully",
+      data: inquiry
+    });
+
+  } catch (error) {
+    next(error);
+  }
+};
+
+
+
+//==============================each Car inqury/////////////////////////////////////
+
+export const getSingleCarInquiries = async (req, res) => {
+  try {
+    // ✅ IMPORTANT FIX HERE
+    const franchiseId = req.user.franchiseId; 
+    const { carId } = req.params;
+
+    // 1️⃣ Car exists check
+    const car = await Car.findOne({
+      _id: carId,
+      franchise: franchiseId,
+      status: "live",
+    });
+
+    if (!car) {
+      return res.status(404).json({
+        success: false,
+        message: "Car not found or not authorized",
+      });
+    }
+
+    // 2️⃣ Inquiries fetch
+    const inquiries = await Inquiry.find({
+      car: carId,
+      assignedFranchise: franchiseId,
+    }).sort({ createdAt: -1 });
+
+    return res.status(200).json({
+      success: true,
+      car: {
+        make: car.make,
+        model: car.model,
+        variant: car.variant,
+        year: car.year,
+      },
+      totalInquiries: inquiries.length,
+      inquiries,
+    });
+
+  } catch (error) {
+    console.error("Single Car Inquiry Error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
   }
 };

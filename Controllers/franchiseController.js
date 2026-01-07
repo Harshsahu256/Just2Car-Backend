@@ -1,7 +1,3 @@
-
-
-
-
 import Franchise from "../Models/franchise.model.js";
 import { uploadFileToSpaces, uploadMultipleFilesToSpaces, deleteFileFromSpaces } from "../Services/s3Service.js"; // 👈 Import S3 Services
 import { Country, State, City } from "../Models/lookupData.model.js";
@@ -17,7 +13,7 @@ import Inquiry from "../Models/inquiry.model.js";
 import Car from "../Models/car.model.js";
 import Deal from "../Models/deal.model.js";
 import mongoose from "mongoose";
-import TerritoryRequest from "../models/TerritoryRequest.js"; 
+import TerritoryRequest from "../Models/TerritoryRequest.js"; 
  
 
 
@@ -218,9 +214,6 @@ export const createFranchise = async (req, res) => {
 };
 
 
-
-
-
 // UPDATE VERIFICATION OR PAYMENT STATUS
 export const updateFranchiseStatus = async (req, res) => {
   try {
@@ -257,7 +250,6 @@ export const updateFranchiseStatus = async (req, res) => {
     return res.status(500).json({ message: error.message });
   }
 };
-
 
 export const getAllFranchises = async (req, res) => {
   try {
@@ -877,6 +869,7 @@ export const createFranchiseCar = async (req, res, next) => {
       listingType: "self",
 
       status: "live",
+     inspectionStatus:"completed",
       liveBy: userId,
       liveDate: new Date()
     });
@@ -1222,44 +1215,125 @@ export const verifyPackagePayment = async (req, res, next) => {
 //   });
 // };
 
-export const getFranchiseDashboardReports = async (req, res) => {
-  const franchise = await Franchise.findOne({ owner: req.user.id });
+// export const getFranchiseDashboardReports = async (req, res) => {
+//   const franchise = await Franchise.findOne({ owner: req.user.id });
  
-  const [
-    pendingListings,
-    approvedListings,
-    rejectedListings,
-    myListings,
-    activeLeads,
-    dealsInProgress
-  ] = await Promise.all([
-    // Baaki sab waisa ka waisa hai
-    Car.countDocuments({ pincode: { $in: franchise.managedPincodes }, status: "pending_verification" }),
-    Car.countDocuments({ pincode: { $in: franchise.managedPincodes }, status: "approved" }),
-    Car.countDocuments({ pincode: { $in: franchise.managedPincodes }, status: "rejected" }),
-    Car.countDocuments({ franchise: franchise._id }),
+//   const [
+//     pendingListings,
+//     approvedListings,
+//     rejectedListings,
+//     myListings,
+//     activeLeads,
+//     dealsInProgress
+//   ] = await Promise.all([
+//     // Baaki sab waisa ka waisa hai
+//     Car.countDocuments({ pincode: { $in: franchise.managedPincodes }, status: "pending_verification" }),
+//     Car.countDocuments({ pincode: { $in: franchise.managedPincodes }, status: "approved" }),
+//     Car.countDocuments({ pincode: { $in: franchise.managedPincodes }, status: "rejected" }),
+//     Car.countDocuments({ franchise: franchise._id }),
     
-    // 👇 SIRF YE LINE CORRECT KI HAI (Pincode hata kar ID lagaya hai)
-    Inquiry.countDocuments({ 
-        assignedFranchise: req.user.id, 
-        status: { $in: ["pending", "contacted", "new"] } // Sirf Active wale
-    }),
+//     // 👇 SIRF YE LINE CORRECT KI HAI (Pincode hata kar ID lagaya hai)
+//     Inquiry.countDocuments({ 
+//         assignedFranchise: req.user.id, 
+//         status: { $in: ["pending", "contacted", "new"] } // Sirf Active wale
+//     }),
 
-    Deal.countDocuments({ franchise: req.user.id, status: { $in: ["negotiating", "accepted"] } })
-  ]);
+//     Deal.countDocuments({ franchise: req.user.id, status: { $in: ["negotiating", "accepted"] } })
+//   ]);
  
-  res.json({
-    success: true,
-    stats: {
+//   res.json({
+//     success: true,
+//     stats: {
+//       pendingListings,
+//       activeLeads,
+//       dealsInProgress,
+//       approvedListings,
+//       rejectedListings,
+//       myListings
+//     }
+//   });
+// };  
+
+
+export const getFranchiseDashboardReports = async (req, res) => {
+  try {
+    if (!req.user?.franchiseId) {
+      return res.status(401).json({
+        success: false,
+        message: "Franchise not authorized"
+      });
+    }
+
+    const franchiseId = req.user.franchiseId;
+
+    const [
       pendingListings,
-      activeLeads,
-      dealsInProgress,
       approvedListings,
       rejectedListings,
-      myListings
-    }
-  });
-};  
+      myListings,
+      activeLeads,
+      dealsInProgress,
+      carsSold // 👈 NEW
+    ] = await Promise.all([
+
+      Car.countDocuments({
+        franchise: franchiseId,
+        status: "pending_verification"
+      }),
+
+      Car.countDocuments({
+        franchise: franchiseId,
+        status: "approved"
+      }),
+
+      Car.countDocuments({
+        franchise: franchiseId,
+        status: "rejected"
+      }),
+
+      Car.countDocuments({
+        franchise: franchiseId
+      }),
+
+      Inquiry.countDocuments({
+        assignedFranchise: franchiseId,
+        status: { $in: ["pending", "contacted", "new"] }
+      }),
+
+      Deal.countDocuments({
+        franchise: franchiseId,
+        status: { $in: ["negotiating", "accepted"] }
+      }),
+
+      // ✅ SOLD CARS COUNT
+      Car.countDocuments({
+        franchise: franchiseId,
+        status: "sold"
+      })
+    ]);
+
+    return res.json({
+      success: true,
+      stats: {
+        pendingListings,
+        approvedListings,
+        rejectedListings,
+        myListings,
+        activeLeads,
+        dealsInProgress,
+        carsSold // 👈 RESPONSE ME ADD
+      }
+    });
+
+  } catch (error) {
+    console.error("Franchise Dashboard Error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error"
+    });
+  }
+};
+
 
 
  
@@ -1350,4 +1424,75 @@ export const getTerritoryRequests = async (req, res) => {
   } catch (error) {
     res.status(500).json({ success: false, message: "Server Error" });
   }
+};    
+
+export const markCarAsSold = async (req, res, next) => {
+  try {
+    const { carId, soldPrice, soldTo } = req.body;
+ 
+    if (!carId || !soldPrice) {
+      return res.status(400).json({
+        success: false,
+        message: "carId and soldPrice are required"
+      });
+    }
+ 
+    if (soldPrice <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: "soldPrice must be greater than 0"
+      });
+    }
+ 
+    const car = await Car.findById(carId);
+ 
+    if (!car) {
+      return res.status(404).json({
+        success: false,
+        message: "Car not found"
+      });
+    }
+ 
+    if (car.status !== "live") {
+      return res.status(400).json({
+        success: false,
+        message: "Only LIVE cars can be sold"
+      });
+    }
+ 
+    // Optional: buyer validation
+    if (soldTo) {
+      const buyerExists = await User.exists({ _id: soldTo });
+      if (!buyerExists) {
+        return res.status(404).json({
+          success: false,
+          message: "Buyer (soldTo) user not found"
+        });
+      }
+    }
+ 
+    car.status = "sold";
+    car.soldPrice = soldPrice;
+    car.soldTo = soldTo || null;
+    car.soldBy = req.user.userId;
+    car.soldDate = new Date();
+ 
+    await car.save();
+ 
+    res.status(200).json({
+      success: true,
+      message: "Car successfully marked as SOLD",
+      data: {
+        carId: car._id,
+        soldPrice,
+        soldDate: car.soldDate
+      }
+    });
+ 
+  } catch (err) {
+    next(err);
+  }
 };
+
+
+

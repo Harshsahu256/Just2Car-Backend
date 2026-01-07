@@ -7,12 +7,13 @@ import { commonLogin, loginUser, registerUser } from '../Controllers/authControl
 import { authenticate,  isFranchise } from '../Middleware/auth.js';
 import { deleteUserProfile, getUserProfile, updateUserPassword, updateUserProfile } from '../Controllers/userController.js';
 
-import { createFranchise, createFranchisePaymentOrder, getAllFranchises, getDashboardReports, getMyLeads, getPendingListings, franchiseLogin, razorpayWebhook, updateFranchiseStatus, rejectCarListing, getFranchiseListings, createFranchiseCar, createPackageOrder, verifyPackagePayment, getFranchiseCars, deleteFranchiseCar, editFranchiseCar, getFranchiseDashboardReports, approveCarListing, editListingByFranchise, getFranchiseListingStats, getTerritoryRequests, requestTerritoryUpdate,  } from '../Controllers/franchiseController.js';
+import { createFranchise, createFranchisePaymentOrder, getAllFranchises, getDashboardReports, getMyLeads, getPendingListings, franchiseLogin, razorpayWebhook, updateFranchiseStatus, rejectCarListing, getFranchiseListings, createFranchiseCar, createPackageOrder, verifyPackagePayment, getFranchiseCars, deleteFranchiseCar, editFranchiseCar, getFranchiseDashboardReports, approveCarListing, editListingByFranchise, getFranchiseListingStats, getTerritoryRequests, requestTerritoryUpdate, markCarAsSold,  } from '../Controllers/franchiseController.js';
 import { getAllPackages, getCarListingPackages, getFranchisePackages, getPackageById } from '../Controllers/packageController.js';
-import { deleteFranchiseInquiry, getFranchiseInquiries } from '../Controllers/inquiryController.js';
+import { deleteFranchiseInquiry, getFranchiseInquiries, getSingleCarInquiries, updateInquiryStatus } from '../Controllers/inquiryController.js';
 import bodyParser from "body-parser";
 import { finalizeDeal, getDealDetails, getFranchiseDeals, makeOffer, startDeal, updateDealStatus } from '../Controllers/dealController.js';
 import { getFranchiseAnalytics } from '../Controllers/reportController.js';
+import { approveAndMakeLive, assignInspector, createFranchiseInspector, deleteFranchiseInspector, getCompletedInspectionByCarId, getCompletedInspectionsForFranchise, getMyInspectors, scheduleInspection, updateFranchiseInspector } from '../Controllers/inspectionController.js';
 const router = express.Router();
 
 router.post( "/createFranchise", upload.fields([
@@ -63,9 +64,10 @@ router.put("/profile/password", updateUserPassword);
 router.delete("/profile", deleteUserProfile);
 
 router.post("/payment/packageorder", createPackageOrder);
+
+
 // ************************************************************************************************
 //                               createFranchise 
-
 //*************************************************************************************************** */
 
 router.post(  "/self-car-list", upload.fields([
@@ -85,7 +87,6 @@ router.delete("/delete/:id", deleteFranchiseCar);
 
 router.get(
   "/listing-stats",
- 
   getFranchiseListingStats
 );
 
@@ -104,21 +105,31 @@ router.put("/listings/edit/:carId", editListingByFranchise);
 
 router.get("/inquiries", getFranchiseInquiries);
 
+// Update inquiry status
+router.put(
+  "/inquiries/:inquiryId/status",
+  updateInquiryStatus
+);
+
 router.delete("/inquiry/:id", deleteFranchiseInquiry);
+
+router.get(
+  "/car-inquiries/:carId",
+  getSingleCarInquiries
+);
 
 
 //*****************************************deal routes ************************************************//
 router.post("/deal/create", startDeal);
-
 router.put("/deal/update", makeOffer);
- 
 router.get("/deal/:dealId", getDealDetails);
- 
 router.put("/deal/finalize", finalizeDeal);
  
+
+//********************************Reports************************* */
 router.get("/franchise-analytics", getFranchiseAnalytics);
 
-
+//**********************************Dashboard************************ */
 router.get("/dashboard", getFranchiseDashboardReports);
 
 
@@ -130,5 +141,36 @@ router.put("/deals/:dealId/status", updateDealStatus);
 router.post("/territory/request",requestTerritoryUpdate );
 router.get("/territory/history", getTerritoryRequests);
 
+
+//=====================inspectors=====================//
+router.post(
+  "/inspectors/create",
+  upload.single("profileImage"),
+  createFranchiseInspector
+);
+
+router.put(
+  "/inspectors/:id",
+  upload.single("profileImage"),
+  updateFranchiseInspector
+);
+
+router.delete(
+  "/inspectors/:id",
+  deleteFranchiseInspector
+);
+
+
+ 
+router.get("/inspectors/all", getMyInspectors);       // Step 2
+router.post("/inspection/schedule", scheduleInspection); // Step 3
+router.put("/inspection/assign", assignInspector);       // Step 5
+router.get("/inspection/completed", getCompletedInspectionsForFranchise);
+router.put("/inspection/make-live", approveAndMakeLive);  // Step 6
+
+
+router.get(
+  "/inspection/completed/:carId",  getCompletedInspectionByCarId);
+router.put("/inspection/mark-sold", markCarAsSold);
 
 export default router;

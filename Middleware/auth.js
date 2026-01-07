@@ -144,3 +144,12 @@ export const isUser = (req, res, next) => {
   }
   next();
 };
+
+
+export const isInspector = (req, res, next) => {
+  if (!req.user || req.user.role !== "inspector") {
+    return next(new ApiError(STATUS_CODES.FORBIDDEN, `${MESSAGES.FORBIDDEN}: Inspector access required.`));
+  }
+  next();
+}
+ 

@@ -8,6 +8,7 @@ import { loginAdmin, registerAdmin } from '../Controllers/adminAuthController.js
 import { loginUser, registerUser } from '../Controllers/authController.js';
 import { sendInquiry } from '../Controllers/inquiryController.js';
 import { getDealDetails, makeOffer } from '../Controllers/dealController.js';
+import { getAssignedInspectorDetails, getMyPendingInspections, respondToSchedule } from '../Controllers/inspectionController.js';
 
 const router = express.Router();
 
@@ -35,5 +36,12 @@ router.post("/sell-car",   upload.fields([
 router.post("/inquiry/send", sendInquiry);
 router.get("/deal/:dealId", getDealDetails);
 router.put("/deal/update", makeOffer);
+
+
+ // Inspection Routes
+ router.get("/my-inspection-requests", getMyPendingInspections);
+ router.put("/inspection/respond", respondToSchedule);
+ router.get("/assigned-inspector/:carId", getAssignedInspectorDetails);
+ 
  
 export default router;

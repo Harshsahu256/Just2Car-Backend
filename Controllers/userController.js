@@ -4,7 +4,8 @@ import { uploadFileToSpaces, deleteFileFromSpaces } from "../Services/s3Service.
 import { ApiError } from "../Utils/apiError.js";
 import { STATUS_CODES } from "../Utils/status.codes.messages.js";
 import mongoose from 'mongoose'
-import Franchise from "../Models/franchise.model.js ";
+import Franchise from "../Models/franchise.model.js";
+
 
 // export const getUserProfile = async (req, res, next) => {
 //   try {
@@ -276,6 +277,91 @@ export const deleteUserProfile = async (req, res, next) => {
 };
 
 
+// export const createUserCarListing = async (req, res, next) => {
+//     try {
+//         // 1. Body se data nikalo
+//         const {
+//             sellerName, sellerMobile, sellerEmail,
+//             city, pincode,
+//             make, model, variant, year, kmDriven,
+//             fuelType, transmission,registrationCity,
+//             registrationNumber, noOfOwners, expectedPrice, description
+//         } = req.body;
+ 
+//         // 2. Validation (Jo fields "Y" hain image mein)
+//         if (!sellerName || !sellerMobile || !city || !make || !model || !year || !kmDriven || !fuelType || !transmission) {
+//             throw new ApiError(400, "All required fields marked with * must be filled.");
+//         }
+ 
+//         // 3. Files Handling (Images & Documents)
+//         // req.files['images'] aur req.files['documents'] multer se aayenge
+//         let imageUrls = [];
+//         let docUrls = [];
+ 
+//         // Upload Car Photos
+//         if (req.files && req.files.images && req.files.images.length > 0) {
+//              // Promise.all use kar rahe hain taaki saari images parallel upload ho jayein
+//              imageUrls = await Promise.all(
+//                 req.files.images.map(async (file) => {
+//                     return await uploadFileToSpaces(file, "car-images");
+//                 })
+//             );
+//         } else {
+//             throw new ApiError(400, "At least one car photo is required.");
+//         }
+ 
+//         // Upload Car Documents (agar user ne upload kiye hain)
+//         if (req.files && req.files.documents && req.files.documents.length > 0) {
+//             docUrls = await Promise.all(
+//                 req.files.documents.map(async (file) => {
+//                     return await uploadFileToSpaces(file, "car-documents");
+//                 })
+//             );
+//         }
+ 
+//         // 4. Franchise Allocation Logic (Optional abhi ke liye)
+//         // Future mein yahan logic aayega: Find Franchise where franchise.pincode === req.body.pincode
+//         // Abhi ke liye hum null chhod rahe hain ya manually admin assign karega.
+//         const assignedFranchise = null;
+ 
+//         // 5. Database mein Save karna
+//         const newCar = await carModel.create({
+//             sellerName,
+//             sellerMobile,
+//             sellerEmail,
+//             city,
+//             pincode,
+//             make,
+//             model,
+//             variant,
+//             year,
+//             kmDriven,
+//             fuelType,
+//             transmission,
+//             registrationNumber,
+//             noOfOwners,
+//             expectedPrice,
+//             description,
+//             registrationCity  ,    // 🔥 NEW FIELD
+//             images: imageUrls,      // S3 Links array
+//             documents: docUrls,     // S3 Links array
+//             listedBy: req.user.id, // Auth middleware se aayega
+//             franchise: assignedFranchise,
+//             status: 'pending_verification'
+//         });
+ 
+//         return res.status(201).json({
+//             success: true,
+//             message: "Car listing submitted successfully! Pending verification.",
+//             car: newCar
+//         });
+ 
+//     } catch (error) {
+//         next(error);
+//     }
+// };
+ 
+
 export const createUserCarListing = async (req, res, next) => {
     try {
         // 1. Body se data nikalo
@@ -294,6 +380,10 @@ export const createUserCarListing = async (req, res, next) => {
  
         // 3. Files Handling (Images & Documents)
         // req.files['images'] aur req.files['documents'] multer se aayenge
+ 
+       
+ 
+ 
         let imageUrls = [];
         let docUrls = [];
  
@@ -309,6 +399,18 @@ export const createUserCarListing = async (req, res, next) => {
             throw new ApiError(400, "At least one car photo is required.");
         }
  
+ 
+ 
+          const assignedFranchise = await Franchise.findOne({
+      managedPincodes: pincode,
+      status: "active",
+      verificationStatus: "verified"
+    });
+ 
+    if (!assignedFranchise) {
+      throw new ApiError(404, "No active franchise found for this pincode");
+    }
+ 
         // Upload Car Documents (agar user ne upload kiye hain)
         if (req.files && req.files.documents && req.files.documents.length > 0) {
             docUrls = await Promise.all(
@@ -321,7 +423,7 @@ export const createUserCarListing = async (req, res, next) => {
         // 4. Franchise Allocation Logic (Optional abhi ke liye)
         // Future mein yahan logic aayega: Find Franchise where franchise.pincode === req.body.pincode
         // Abhi ke liye hum null chhod rahe hain ya manually admin assign karega.
-        const assignedFranchise = null;
+        // const assignedFranchise = null;
  
         // 5. Database mein Save karna
         const newCar = await carModel.create({
@@ -345,7 +447,7 @@ export const createUserCarListing = async (req, res, next) => {
             images: imageUrls,      // S3 Links array
             documents: docUrls,     // S3 Links array
             listedBy: req.user.id, // Auth middleware se aayega
-            franchise: assignedFranchise,
+            franchise: assignedFranchise._id,
             status: 'pending_verification'
         });
  
