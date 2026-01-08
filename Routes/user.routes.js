@@ -8,7 +8,7 @@ import { loginAdmin, registerAdmin } from '../Controllers/adminAuthController.js
 import { loginUser, registerUser } from '../Controllers/authController.js';
 import { sendInquiry } from '../Controllers/inquiryController.js';
 import { getDealDetails, makeOffer } from '../Controllers/dealController.js';
-import { getAssignedInspectorDetails, getMyPendingInspections, respondToSchedule } from '../Controllers/inspectionController.js';
+import { getAssignedinspectionDetails, getMyPendinginspections, respondToSchedule } from '../Controllers/inspectionController.js';
 
 const router = express.Router();
 
@@ -38,10 +38,10 @@ router.get("/deal/:dealId", getDealDetails);
 router.put("/deal/update", makeOffer);
 
 
- // Inspection Routes
- router.get("/my-inspection-requests", getMyPendingInspections);
+ // inspection Routes
+ router.get("/my-inspection-requests", getMyPendinginspections);
  router.put("/inspection/respond", respondToSchedule);
- router.get("/assigned-inspector/:carId", getAssignedInspectorDetails);
+ router.get("/assigned-inspection/:carId", getAssignedinspectionDetails);
  
  
 export default router;

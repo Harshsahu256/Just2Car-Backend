@@ -9,7 +9,7 @@ import adminRoutes from "./Routes/admin.routes.js";
 import subadminRoutes from "./Routes/subadmin.routes.js";
 import dealerRoutes from "./Routes/dealer.routes.js";
 import franchiseRoutes from "./Routes/franchise.routes.js";
-import inspectorRoutes from "./Routes/inspector.routes.js"
+import inspectionRoutes from "./Routes/inspection.routes.js"
 import userRoutes from "./Routes/user.routes.js";
 import authRoutes from "./Routes/auth.routes.js";
 import { initSocket } from "./Services/socket.js";
@@ -27,7 +27,7 @@ app.use("/api/v1/admin", adminRoutes);
 app.use("/api/v1/subadmin", subadminRoutes);
 app.use("/api/v1/dealer", dealerRoutes);
 app.use("/api/v1/franchise", franchiseRoutes);
-app.use("/api/v1/inspector", inspectorRoutes);
+app.use("/api/v1/inspection", inspectionRoutes);
 app.use("/api/v1/user", userRoutes);
 app.use("/api/v1/auth", authRoutes);
 

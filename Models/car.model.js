@@ -377,12 +377,13 @@
             enum: ['pending_verification', 'approved', 'live', 'sold', 'rejected'],
             default: 'pending_verification'
         },
- 
-        qualityRating: { type: Number, min: 0, max: 5, default: 0 },
+
+            qualityRating: { type: Number, min: 0, max: 10, default: 0 },
+
         views: { type: Number, default: 0 },
         inquiries: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Inquiry' }],
  
-      /// Inspection Details
+      /// inspection Details
  
  
  
@@ -392,11 +393,11 @@
             type: mongoose.Schema.Types.ObjectId,
             ref: "Inspection"
             }],
-            currentInspection: {type: mongoose.Schema.Types.ObjectId,ref: "Inspection" , default: null},
+            currentinspection: {type: mongoose.Schema.Types.ObjectId,ref: "Inspection" , default: null},
             inspectionStatus: {type: String,enum: ['pending', 'reject', 'scheduled', 'user_accepted', 'assigned', 'completed', 'failed'],default: 'pending'},
             scheduledDate: { type: Date },
             scheduledTime: { type: String },
-            assignedInspector: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+            assignedinspection: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
             inspectionReport: { type: mongoose.Schema.Types.ObjectId, ref: 'Inspection' },
  
  

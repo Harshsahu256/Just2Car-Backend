@@ -3,8 +3,8 @@
 // const inspectionSchema = new mongoose.Schema({
 //     car: { type: mongoose.Schema.Types.ObjectId, ref: 'Car', required: true },
 //     franchise: { type: mongoose.Schema.Types.ObjectId, ref: 'Franchise', },
-//     inspector: {type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-//     inspectorName: { type: String, required: true },
+//     inspection: {type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+//     inspectionName: { type: String, required: true },
 //     inspectionDate: { type: Date, required: true },
    
 //     // Scores
@@ -26,7 +26,7 @@
 //     status: { type: String, enum: ['pending', 'submitted'], default: 'pending' }
 // }, { timestamps: true });
  
-// export default mongoose.model("Inspection", inspectionSchema);
+// export default mongoose.model("inspection", inspectionSchema);
 
 
 // Models/inspection.model.js
@@ -38,8 +38,8 @@ import mongoose from "mongoose";
 const inspectionSchema = new mongoose.Schema({
     car: { type: mongoose.Schema.Types.ObjectId, ref: 'Car', required: true },
     franchise: { type: mongoose.Schema.Types.ObjectId, ref: 'Franchise' },
-    inspector: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-    inspectorName: { type: String, required: true },
+    inspection: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    inspectionName: { type: String, required: true },
     inspectionDate: { type: Date, required: true },
    
     // Scores
@@ -56,7 +56,7 @@ const inspectionSchema = new mongoose.Schema({
     
     // ✅ PHOTOS & VIDEO
     photos: [{ type: String }], // Array of S3 URLs
-    video: { type: String },    // ✅ NEW: Single S3 URL for Inspection Video
+    video: { type: String },    // ✅ NEW: Single S3 URL for inspection Video
 
     estimatedMarketPrice: { type: Number },
     overallGrade: { type: String, enum: ['A', 'B', 'C', 'D', 'E'] },

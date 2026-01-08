@@ -13,7 +13,7 @@ import { deleteFranchiseInquiry, getFranchiseInquiries, getSingleCarInquiries, u
 import bodyParser from "body-parser";
 import { finalizeDeal, getDealDetails, getFranchiseDeals, makeOffer, startDeal, updateDealStatus } from '../Controllers/dealController.js';
 import { getFranchiseAnalytics } from '../Controllers/reportController.js';
-import { approveAndMakeLive, assignInspector, createFranchiseInspector, deleteFranchiseInspector, getCompletedInspectionByCarId, getCompletedInspectionsForFranchise, getMyInspectors, scheduleInspection, updateFranchiseInspector } from '../Controllers/inspectionController.js';
+import { approveAndMakeLive, assigninspection, createFranchiseinspection, deleteFranchiseinspection, getCompletedinspectionByCarId, getCompletedinspectionsForFranchise, getMyinspections, scheduleinspection, updateFranchiseinspection } from '../Controllers/inspectionController.js';
 const router = express.Router();
 
 router.post( "/createFranchise", upload.fields([
@@ -142,35 +142,35 @@ router.post("/territory/request",requestTerritoryUpdate );
 router.get("/territory/history", getTerritoryRequests);
 
 
-//=====================inspectors=====================//
+//=====================inspections=====================//
 router.post(
-  "/inspectors/create",
+  "/inspections/create",
   upload.single("profileImage"),
-  createFranchiseInspector
+  createFranchiseinspection
 );
 
 router.put(
-  "/inspectors/:id",
+  "/inspections/:id",
   upload.single("profileImage"),
-  updateFranchiseInspector
+  updateFranchiseinspection
 );
 
 router.delete(
-  "/inspectors/:id",
-  deleteFranchiseInspector
+  "/inspections/:id",
+  deleteFranchiseinspection
 );
 
 
  
-router.get("/inspectors/all", getMyInspectors);       // Step 2
-router.post("/inspection/schedule", scheduleInspection); // Step 3
-router.put("/inspection/assign", assignInspector);       // Step 5
-router.get("/inspection/completed", getCompletedInspectionsForFranchise);
+router.get("/inspections/all", getMyinspections);       // Step 2
+router.post("/inspection/schedule", scheduleinspection); // Step 3
+router.put("/inspection/assign", assigninspection);       // Step 5
+router.get("/inspection/completed", getCompletedinspectionsForFranchise);
 router.put("/inspection/make-live", approveAndMakeLive);  // Step 6
 
 
 router.get(
-  "/inspection/completed/:carId",  getCompletedInspectionByCarId);
+  "/inspection/completed/:carId",  getCompletedinspectionByCarId);
 router.put("/inspection/mark-sold", markCarAsSold);
 
 export default router;

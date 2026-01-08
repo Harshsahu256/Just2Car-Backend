@@ -34,7 +34,7 @@ const userSchema = new mongoose.Schema(
 
     role: {
       type: String,
-      enum: ["user", "subadmin", "franchise", "admin", "dealer",'inspector'],
+      enum: ["user", "subadmin", "franchise", "admin", "dealer",'inspection'],
       default: "user",
     },
      // For Sub-Admin: Permissions
